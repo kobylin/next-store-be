@@ -1,0 +1,50 @@
+type Product {
+  id: String
+  title: String
+  imageUrl: String
+  description: String
+  createdAt: String
+  rating: Int
+  price: Float
+  categories: [ProductCategory!]
+  attributes: [ProductAttribute!]
+}
+
+type ProductCategory {
+  id: String
+  key: String
+  parentId: String
+  name: String
+  createdAt: String
+}
+
+type ProductAttribute {
+  id: String
+  key: String
+  category: ProductAttributeCategory
+  name: String
+  description: String
+  createdAt: String
+}
+
+type ProductAttributeCategory {
+  id: String
+  key: String
+  name: String
+  order: Int
+  createdAt: String
+}
+
+type Query {
+  products(
+    orderBy: String
+    count: Int
+    offset: Int
+    categories: [String!]
+    attributes: [String!]
+  ): [Product!]
+  productAttributes(
+    category: [String!]
+  ): [Product!]
+  migration: String
+}

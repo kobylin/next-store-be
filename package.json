@@ -1,0 +1,31 @@
+{
+  "name": "next-store-be",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc",
+    "compile-watch": "tsc -w",
+    "start": "npm run compile && node ./dist/index.js",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen-watch": "graphql-codegen -w --config codegen.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@apollo/server": "^4.6.0",
+    "@types/lodash": "^4.14.192",
+    "graphql": "^16.6.0",
+    "lodash": "^4.17.21",
+    "mongoose": "^7.0.3"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^3.3.0",
+    "@graphql-codegen/typescript": "^3.0.3",
+    "@graphql-codegen/typescript-resolvers": "^3.2.0",
+    "@types/mongoose": "^5.11.97",
+    "@types/node": "^18.15.11",
+    "prettier": "^2.8.7",
+    "typescript": "^5.0.3"
+  }
+}
