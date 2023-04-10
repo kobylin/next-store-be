@@ -1,5 +1,6 @@
 import * as mongoose from "mongoose";
 import { Model, model, Schema } from "mongoose";
+import type { HydratedDocument } from "mongoose";
 
 type ID = typeof Schema.Types.ObjectId | string;
 
@@ -66,7 +67,7 @@ export interface IProductCategory {
 }
 
 interface IProductCategoryModel extends Model<IProductCategory> {
-  getCategoryWithParents(opts: any): Promise<any[]>;
+  getCategoryWithParents(opts: { category: string }): Promise<any[]>;
 }
 
 const productCategorySchema = new Schema<
@@ -80,11 +81,18 @@ const productCategorySchema = new Schema<
   createdAt: { type: Date, required: true, default: () => new Date() },
 });
 
-const fetchAllCategoryParents = async (category: any): Promise<any> => {
-  if (category.parentId) {
-    const parent = await ProductCategory.findOne({ _id: category.parentId });
+const fetchAllCategoryParents = async (
+  category: HydratedDocument<IProductCategory> | null
+): Promise<HydratedDocument<IProductCategory>[]> => {
+  if (category?.parentId) {
+    const parent = await ProductCategory.findOne({
+      _id: category.parentId,
+    }).exec();
 
-    return [parent, ...(await fetchAllCategoryParents(parent))];
+    return [
+      ...(parent ? [parent] : []),
+      ...(await fetchAllCategoryParents(parent)),
+    ];
   }
 
   return [];
@@ -95,7 +103,11 @@ productCategorySchema.statics.getCategoryWithParents = async ({
 }) => {
   const category = await ProductCategory.findOne({
     key: categoryKey,
-  });
+  }).exec();
+
+  if (!category) {
+    return [];
+  }
 
   const parents = await fetchAllCategoryParents(category);
 

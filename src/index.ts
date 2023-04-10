@@ -15,7 +15,9 @@ const typeDefs = fs
   .readFileSync(path.resolve(__dirname, "../src/graphql/schema.graphql"))
   .toString();
 
-const resolvers: Resolvers = {
+interface ApolloContext {}
+
+const resolvers: Resolvers<ApolloContext> = {
   Query: {
     products: async (_, args) => {
       const products = await Product.find({}, null, {
@@ -56,7 +58,6 @@ const resolvers: Resolvers = {
     },
     categoryPath: async (_, args) => {
       const category = args.category;
-
       const path = await ProductCategory.getCategoryWithParents({ category });
 
       return path.map((c: any) => ({
@@ -123,10 +124,11 @@ const resolvers: Resolvers = {
     },
   },
 };
+
 (async () => {
   await connect();
 
-  const server = new ApolloServer<any>({
+  const server = new ApolloServer<ApolloContext>({
     typeDefs,
     resolvers,
   });
