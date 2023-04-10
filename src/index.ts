@@ -20,24 +20,27 @@ const resolvers: Resolvers = {
     products: async (_, args) => {
       const products = await Product.find({}, null, {
         limit: args.count ?? 10,
-      });
+      }).exec();
 
-      return products.map((p: any) => ({
-        id: p.id,
+      return products.map((p) => ({
+        id: p.id.toString(),
         title: p.title,
         imageUrl: p.imageUrl,
         description: p.description,
         rating: p.rating,
         price: p.price,
         createdAt: p.createdAt.getTime().toString(),
-        attributes: p.attributes.map((a: any) => ({ id: a.toString() })),
-        categories: p.categories.map((a: any) => ({ id: a.toString() })),
+        attributes: p.attributes.map((a) => ({
+          id: a.toString(),
+        })),
+        categories: p.categories.map((a) => ({
+          id: a.toString(),
+        })),
       }));
     },
     productAttributesCategories: async (_, args) => {
       const category = args.category;
 
-      // @ts-ignore
       const productAttributesCategories = await Product.getAttributesCategories(
         { category }
       );
@@ -54,7 +57,6 @@ const resolvers: Resolvers = {
     categoryPath: async (_, args) => {
       const category = args.category;
 
-      // @ts-ignore
       const path = await ProductCategory.getCategoryWithParents({ category });
 
       return path.map((c: any) => ({
@@ -64,13 +66,16 @@ const resolvers: Resolvers = {
     },
   },
   Product: {
-    attributes: async (parent, args, context) => {
+    attributes: async (parent) => {
+      if (!parent.attributes || parent.attributes.length === 0) {
+        return [];
+      }
       const attributes = await ProductAttribute.find({
-        _id: { $in: parent.attributes?.map((a) => a.id) },
-      });
+        _id: { $in: parent.attributes.map((a) => a.id) },
+      }).exec();
 
-      return attributes.map((a: any) => ({
-        id: a.id,
+      return attributes.map((a) => ({
+        id: a.id.toString(),
         key: a.key,
         name: a.name,
         description: a.description,
@@ -78,16 +83,18 @@ const resolvers: Resolvers = {
         createdAt: a.createdAt.getTime().toString(),
       }));
     },
-    categories: async (parent, args, context) => {
+    categories: async (parent) => {
+      if (!parent.categories || parent.categories.length === 0) {
+        return [];
+      }
       const categories = await ProductCategory.find({
-        _id: { $in: parent.categories?.map((a) => a.id) },
-      });
+        _id: { $in: parent.categories.map((a) => a.id) },
+      }).exec();
 
-      return categories.map((a: any) => ({
-        id: a.id,
+      return categories.map((a) => ({
+        id: a.id.toString(),
         key: a.key,
         name: a.name,
-        description: a.description,
         parentId: a.parentId?.toString() ?? null,
         createdAt: a.createdAt.getTime().toString(),
       }));
@@ -95,15 +102,19 @@ const resolvers: Resolvers = {
   },
   ProductAttribute: {
     category: async (parent) => {
+      if (!parent.category?.id) {
+        return null;
+      }
       const category = await ProductAttributeCategory.findOne({
-        _id: parent.category?.id,
-      });
+        _id: parent.category.id,
+      }).exec();
+
       if (!category) {
-        return { id: parent.category?.id };
+        return null;
       }
 
       return {
-        id: category.id,
+        id: category.id.toString(),
         key: category.key,
         name: category.name,
         order: category.order,
@@ -120,9 +131,9 @@ const resolvers: Resolvers = {
     resolvers,
   });
 
-  startStandaloneServer(server, {
+  const { url } = await startStandaloneServer(server, {
     listen: { port: 4000 },
-  }).then(({ url }) => {
-    console.log(`🚀  Server ready at: ${url}`);
   });
+
+  console.log(`🚀  Server ready at: ${url}`);
 })();

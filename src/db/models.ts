@@ -1,16 +1,23 @@
 import * as mongoose from "mongoose";
-import { model, Schema } from "mongoose";
+import { Model, model, Schema } from "mongoose";
 
-interface IProductAttribute {
-  id: string;
+type ID = typeof Schema.Types.ObjectId | string;
+
+export interface IProductAttribute {
+  id: ID;
   key: string;
-  categoryId: string;
+  categoryId: ID;
   name: string;
   description: string;
   createdAt: Date;
 }
 
-const productAttributeSchema = new Schema({
+interface IProductAttributeModel extends Model<IProductAttribute> {}
+
+const productAttributeSchema = new Schema<
+  IProductAttribute,
+  IProductAttributeModel
+>({
   key: { type: String, required: true },
   categoryId: { type: mongoose.Types.ObjectId, required: true },
   name: { type: String, required: true },
@@ -18,41 +25,54 @@ const productAttributeSchema = new Schema({
   createdAt: { type: Date, required: true, default: () => new Date() },
 });
 
-export const ProductAttribute = model(
-  "ProductAttribute",
-  productAttributeSchema
-);
+export const ProductAttribute = model<
+  IProductAttribute,
+  IProductAttributeModel
+>("ProductAttribute", productAttributeSchema);
 
-interface IProductAttributeCategory {
-  id: mongoose.Types.ObjectId;
+export interface IProductAttributeCategory {
+  id: ID;
   key: string;
   name: string;
-  order: Number;
+  order: number;
   createdAt: Date;
 }
 
-const productAttributeCategorySchema = new Schema({
+interface IProductAttributeCategoryModel
+  extends Model<IProductAttributeCategory> {}
+
+const productAttributeCategorySchema = new Schema<
+  IProductAttributeCategory,
+  IProductAttributeCategoryModel
+>({
   key: { type: String, required: true },
   name: { type: String, required: true },
   order: { type: Number, required: true, default: 0 },
   createdAt: { type: Date, required: true, default: () => new Date() },
 });
 
-export const ProductAttributeCategory = model(
-  "ProductAttributeCategory",
-  productAttributeCategorySchema
-);
+export const ProductAttributeCategory = model<
+  IProductAttributeCategory,
+  IProductAttributeCategoryModel
+>("ProductAttributeCategory", productAttributeCategorySchema);
 
-interface IProductCategory {
-  id: mongoose.Types.ObjectId;
+export interface IProductCategory {
+  id: ID;
   key: string;
   name: string;
   description: string;
-  parentId: mongoose.Types.ObjectId;
+  parentId: ID;
+  createdAt: Date;
 }
 
-// FIXME: generic does not work here
-const productCategorySchema = new Schema({
+interface IProductCategoryModel extends Model<IProductCategory> {
+  getCategoryWithParents(opts: any): Promise<any[]>;
+}
+
+const productCategorySchema = new Schema<
+  IProductCategory,
+  IProductCategoryModel
+>({
   key: { type: String, required: true },
   name: { type: String, required: true },
   description: { type: String, required: false },
@@ -82,21 +102,28 @@ productCategorySchema.statics.getCategoryWithParents = async ({
   return [...parents.reverse(), category].map((c) => c.toJSON());
 };
 
-export const ProductCategory = model("ProductCategory", productCategorySchema);
+export const ProductCategory = model<IProductCategory, IProductCategoryModel>(
+  "ProductCategory",
+  productCategorySchema
+);
 
-interface IProduct {
-  id: mongoose.Types.ObjectId;
+export interface IProduct {
+  id: ID;
   title: string;
   imageUrl: string;
   description: string;
-  createdAt: string;
-  rating: Number;
-  price: Number;
-  categories: mongoose.Types.ObjectId[];
-  attributes: mongoose.Types.ObjectId[];
+  rating: number;
+  price: number;
+  categories: (ID | IProductCategory)[];
+  attributes: (ID | IProductAttribute)[];
+  createdAt: Date;
 }
 
-const productSchema = new Schema({
+interface IProductModel extends Model<IProduct> {
+  getAttributesCategories(opts: any): Promise<any[]>;
+}
+
+const productSchema = new Schema<IProduct, IProductModel>({
   title: { type: String, required: true },
   imageUrl: { type: String, required: true },
   description: { type: String, required: false },
@@ -110,7 +137,7 @@ const productSchema = new Schema({
 productSchema.statics.getAttributesCategories = async ({
   category: categoryKey,
 }) => {
-  const category = await ProductCategory.findOne({ key: categoryKey });
+  const category = await ProductCategory.findOne({ key: categoryKey }).exec();
 
   if (!category) {
     return [];
@@ -138,7 +165,7 @@ productSchema.statics.getAttributesCategories = async ({
 
   const attributes = await ProductAttribute.find({
     _id: { $in: attributesIds[0].attributes },
-  });
+  }).exec();
 
   const categoriesIds = new Set<string>();
 
@@ -154,7 +181,7 @@ productSchema.statics.getAttributesCategories = async ({
     },
     null,
     { sort: { order: 1 } }
-  );
+  ).exec();
 
   return categories.map((c) => ({
     ...c.toJSON(),
@@ -164,4 +191,4 @@ productSchema.statics.getAttributesCategories = async ({
   }));
 };
 
-export const Product = model("Product", productSchema);
+export const Product = model<IProduct, IProductModel>("Product", productSchema);

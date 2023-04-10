@@ -1,11 +1,10 @@
 import * as mongoose from "mongoose";
-import { Mongoose } from "mongoose";
 import config from "../config";
 mongoose.set("strictQuery", true);
 
 const dbConfig = config.database;
 
-let mongooseConnection: Mongoose;
+let mongooseConnection: typeof mongoose;
 
 export async function connect() {
   const port = dbConfig.port ? `:${dbConfig.port}` : "";
