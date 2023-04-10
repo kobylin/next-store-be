@@ -4,6 +4,7 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -21,7 +22,7 @@ export type Product = {
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   imageUrl?: Maybe<Scalars['String']>;
-  price?: Maybe<Scalars['Float']>;
+  price: Scalars['Float'];
   rating?: Maybe<Scalars['Int']>;
   title?: Maybe<Scalars['String']>;
 };
@@ -38,6 +39,7 @@ export type ProductAttribute = {
 
 export type ProductAttributeCategory = {
   __typename?: 'ProductAttributeCategory';
+  attributes?: Maybe<Array<ProductAttribute>>;
   createdAt?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   key?: Maybe<Scalars['String']>;
@@ -56,14 +58,19 @@ export type ProductCategory = {
 
 export type Query = {
   __typename?: 'Query';
-  migration?: Maybe<Scalars['String']>;
-  productAttributes?: Maybe<Array<Product>>;
+  categoryPath?: Maybe<Array<ProductCategory>>;
+  productAttributesCategories?: Maybe<Array<ProductAttributeCategory>>;
   products?: Maybe<Array<Product>>;
 };
 
 
-export type QueryProductAttributesArgs = {
-  category?: InputMaybe<Array<Scalars['String']>>;
+export type QueryCategoryPathArgs = {
+  category: Scalars['String'];
+};
+
+
+export type QueryProductAttributesCategoriesArgs = {
+  category: Scalars['String'];
 };
 
 
@@ -177,7 +184,7 @@ export type ProductResolvers<ContextType = any, ParentType extends ResolversPare
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   imageUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  price?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  price?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   rating?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -194,6 +201,7 @@ export type ProductAttributeResolvers<ContextType = any, ParentType extends Reso
 };
 
 export type ProductAttributeCategoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProductAttributeCategory'] = ResolversParentTypes['ProductAttributeCategory']> = {
+  attributes?: Resolver<Maybe<Array<ResolversTypes['ProductAttribute']>>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -212,8 +220,8 @@ export type ProductCategoryResolvers<ContextType = any, ParentType extends Resol
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  migration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  productAttributes?: Resolver<Maybe<Array<ResolversTypes['Product']>>, ParentType, ContextType, Partial<QueryProductAttributesArgs>>;
+  categoryPath?: Resolver<Maybe<Array<ResolversTypes['ProductCategory']>>, ParentType, ContextType, RequireFields<QueryCategoryPathArgs, 'category'>>;
+  productAttributesCategories?: Resolver<Maybe<Array<ResolversTypes['ProductAttributeCategory']>>, ParentType, ContextType, RequireFields<QueryProductAttributesCategoriesArgs, 'category'>>;
   products?: Resolver<Maybe<Array<ResolversTypes['Product']>>, ParentType, ContextType, Partial<QueryProductsArgs>>;
 };
 

@@ -5,7 +5,7 @@ type Product {
   description: String
   createdAt: String
   rating: Int
-  price: Float
+  price: Float!
   categories: [ProductCategory!]
   attributes: [ProductAttribute!]
 }
@@ -33,6 +33,7 @@ type ProductAttributeCategory {
   name: String
   order: Int
   createdAt: String
+  attributes: [ProductAttribute!]
 }
 
 type Query {
@@ -43,8 +44,8 @@ type Query {
     categories: [String!]
     attributes: [String!]
   ): [Product!]
-  productAttributes(
-    category: [String!]
-  ): [Product!]
-  migration: String
+  productAttributesCategories(
+    category: String!
+  ): [ProductAttributeCategory!]
+  categoryPath(category: String!): [ProductCategory!]
 }
