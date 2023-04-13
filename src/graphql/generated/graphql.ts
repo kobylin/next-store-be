@@ -14,6 +14,18 @@ export type Scalars = {
   Float: number;
 };
 
+export type AttributeWithCategory = {
+  attribute: Scalars['String'];
+  category: Scalars['String'];
+};
+
+export type PaginationMeta = {
+  __typename?: 'PaginationMeta';
+  count: Scalars['Int'];
+  offset: Scalars['Int'];
+  total: Scalars['Int'];
+};
+
 export type Product = {
   __typename?: 'Product';
   attributes?: Maybe<Array<ProductAttribute>>;
@@ -56,16 +68,44 @@ export type ProductCategory = {
   parentId?: Maybe<Scalars['String']>;
 };
 
+export type ProductCategoryHierarchyItem = {
+  __typename?: 'ProductCategoryHierarchyItem';
+  children?: Maybe<Array<ProductCategoryHierarchyItem>>;
+  createdAt?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  key?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  parentId?: Maybe<Scalars['String']>;
+};
+
+export type ProductResult = {
+  __typename?: 'ProductResult';
+  product?: Maybe<Product>;
+};
+
+export type ProductsPaginatedResult = {
+  __typename?: 'ProductsPaginatedResult';
+  meta: PaginationMeta;
+  products: Array<Product>;
+};
+
 export type Query = {
   __typename?: 'Query';
+  allCategories?: Maybe<Array<ProductCategory>>;
   categoryPath?: Maybe<Array<ProductCategory>>;
+  product?: Maybe<Product>;
   productAttributesCategories?: Maybe<Array<ProductAttributeCategory>>;
-  products?: Maybe<Array<Product>>;
+  products?: Maybe<ProductsPaginatedResult>;
 };
 
 
 export type QueryCategoryPathArgs = {
   category: Scalars['String'];
+};
+
+
+export type QueryProductArgs = {
+  id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -75,11 +115,12 @@ export type QueryProductAttributesCategoriesArgs = {
 
 
 export type QueryProductsArgs = {
-  attributes?: InputMaybe<Array<Scalars['String']>>;
-  categories?: InputMaybe<Array<Scalars['String']>>;
+  attributes?: InputMaybe<Array<AttributeWithCategory>>;
+  category?: InputMaybe<Scalars['String']>;
   count?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -153,28 +194,45 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  AttributeWithCategory: AttributeWithCategory;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
+  PaginationMeta: ResolverTypeWrapper<PaginationMeta>;
   Product: ResolverTypeWrapper<Product>;
   ProductAttribute: ResolverTypeWrapper<ProductAttribute>;
   ProductAttributeCategory: ResolverTypeWrapper<ProductAttributeCategory>;
   ProductCategory: ResolverTypeWrapper<ProductCategory>;
+  ProductCategoryHierarchyItem: ResolverTypeWrapper<ProductCategoryHierarchyItem>;
+  ProductResult: ResolverTypeWrapper<ProductResult>;
+  ProductsPaginatedResult: ResolverTypeWrapper<ProductsPaginatedResult>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  AttributeWithCategory: AttributeWithCategory;
   Boolean: Scalars['Boolean'];
   Float: Scalars['Float'];
   Int: Scalars['Int'];
+  PaginationMeta: PaginationMeta;
   Product: Product;
   ProductAttribute: ProductAttribute;
   ProductAttributeCategory: ProductAttributeCategory;
   ProductCategory: ProductCategory;
+  ProductCategoryHierarchyItem: ProductCategoryHierarchyItem;
+  ProductResult: ProductResult;
+  ProductsPaginatedResult: ProductsPaginatedResult;
   Query: {};
   String: Scalars['String'];
+};
+
+export type PaginationMetaResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaginationMeta'] = ResolversParentTypes['PaginationMeta']> = {
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  offset?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type ProductResolvers<ContextType = any, ParentType extends ResolversParentTypes['Product'] = ResolversParentTypes['Product']> = {
@@ -219,17 +277,44 @@ export type ProductCategoryResolvers<ContextType = any, ParentType extends Resol
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type ProductCategoryHierarchyItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProductCategoryHierarchyItem'] = ResolversParentTypes['ProductCategoryHierarchyItem']> = {
+  children?: Resolver<Maybe<Array<ResolversTypes['ProductCategoryHierarchyItem']>>, ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  parentId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ProductResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProductResult'] = ResolversParentTypes['ProductResult']> = {
+  product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ProductsPaginatedResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProductsPaginatedResult'] = ResolversParentTypes['ProductsPaginatedResult']> = {
+  meta?: Resolver<ResolversTypes['PaginationMeta'], ParentType, ContextType>;
+  products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  allCategories?: Resolver<Maybe<Array<ResolversTypes['ProductCategory']>>, ParentType, ContextType>;
   categoryPath?: Resolver<Maybe<Array<ResolversTypes['ProductCategory']>>, ParentType, ContextType, RequireFields<QueryCategoryPathArgs, 'category'>>;
+  product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, Partial<QueryProductArgs>>;
   productAttributesCategories?: Resolver<Maybe<Array<ResolversTypes['ProductAttributeCategory']>>, ParentType, ContextType, RequireFields<QueryProductAttributesCategoriesArgs, 'category'>>;
-  products?: Resolver<Maybe<Array<ResolversTypes['Product']>>, ParentType, ContextType, Partial<QueryProductsArgs>>;
+  products?: Resolver<Maybe<ResolversTypes['ProductsPaginatedResult']>, ParentType, ContextType, Partial<QueryProductsArgs>>;
 };
 
 export type Resolvers<ContextType = any> = {
+  PaginationMeta?: PaginationMetaResolvers<ContextType>;
   Product?: ProductResolvers<ContextType>;
   ProductAttribute?: ProductAttributeResolvers<ContextType>;
   ProductAttributeCategory?: ProductAttributeCategoryResolvers<ContextType>;
   ProductCategory?: ProductCategoryResolvers<ContextType>;
+  ProductCategoryHierarchyItem?: ProductCategoryHierarchyItemResolvers<ContextType>;
+  ProductResult?: ProductResultResolvers<ContextType>;
+  ProductsPaginatedResult?: ProductsPaginatedResultResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
 };
 

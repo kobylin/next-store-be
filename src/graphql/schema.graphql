@@ -36,16 +36,46 @@ type ProductAttributeCategory {
   attributes: [ProductAttribute!]
 }
 
+type ProductResult {
+  product: Product
+}
+
+input AttributeWithCategory {
+  category: String!
+  attribute: String!
+}
+
+type ProductCategoryHierarchyItem {
+  id: String
+  key: String
+  parentId: String
+  name: String
+  createdAt: String
+  children: [ProductCategoryHierarchyItem!]
+}
+
+type PaginationMeta {
+  offset: Int!
+  count: Int!
+  total: Int!
+}
+
+type ProductsPaginatedResult {
+  products: [Product!]!
+  meta: PaginationMeta!
+}
+
 type Query {
   products(
     orderBy: String
     count: Int
     offset: Int
-    categories: [String!]
-    attributes: [String!]
-  ): [Product!]
-  productAttributesCategories(
-    category: String!
-  ): [ProductAttributeCategory!]
+    category: String
+    attributes: [AttributeWithCategory!]
+    search: String
+  ): ProductsPaginatedResult
+  product(id: String): Product
+  productAttributesCategories(category: String!): [ProductAttributeCategory!]
   categoryPath(category: String!): [ProductCategory!]
+  allCategories: [ProductCategory!]
 }

@@ -1,7 +1,7 @@
 export default {
   database: {
     database: "next-store-db",
-    host: "localhost",
+    host: "mongo",
     port: "",
     username: "",
     password: "",

@@ -1,6 +1,11 @@
 import * as mongoose from "mongoose";
 import { Model, model, Schema } from "mongoose";
 import type { HydratedDocument } from "mongoose";
+import {
+  fetchAllCategoryChildren,
+  fetchAllCategoryParents,
+  fetchCategoriesChildrenRecursively,
+} from "./utils";
 
 type ID = typeof Schema.Types.ObjectId | string;
 
@@ -68,6 +73,7 @@ export interface IProductCategory {
 
 interface IProductCategoryModel extends Model<IProductCategory> {
   getCategoryWithParents(opts: { category: string }): Promise<any[]>;
+  getCategoriesHierarchy(): Promise<any[]>;
 }
 
 const productCategorySchema = new Schema<
@@ -80,23 +86,6 @@ const productCategorySchema = new Schema<
   parentId: { type: mongoose.Types.ObjectId, required: false },
   createdAt: { type: Date, required: true, default: () => new Date() },
 });
-
-const fetchAllCategoryParents = async (
-  category: HydratedDocument<IProductCategory> | null
-): Promise<HydratedDocument<IProductCategory>[]> => {
-  if (category?.parentId) {
-    const parent = await ProductCategory.findOne({
-      _id: category.parentId,
-    }).exec();
-
-    return [
-      ...(parent ? [parent] : []),
-      ...(await fetchAllCategoryParents(parent)),
-    ];
-  }
-
-  return [];
-};
 
 productCategorySchema.statics.getCategoryWithParents = async ({
   category: categoryKey,
@@ -112,6 +101,17 @@ productCategorySchema.statics.getCategoryWithParents = async ({
   const parents = await fetchAllCategoryParents(category);
 
   return [...parents.reverse(), category].map((c) => c.toJSON());
+};
+
+productCategorySchema.statics.getCategoriesHierarchy = async () => {
+  const rootCategories = await ProductCategory.find({
+    parentId: null,
+  }).exec();
+
+  const result = rootCategories.map((c) => c.toJSON());
+  await fetchCategoriesChildrenRecursively(result);
+
+  return result;
 };
 
 export const ProductCategory = model<IProductCategory, IProductCategoryModel>(
@@ -149,15 +149,30 @@ const productSchema = new Schema<IProduct, IProductModel>({
 productSchema.statics.getAttributesCategories = async ({
   category: categoryKey,
 }) => {
-  const category = await ProductCategory.findOne({ key: categoryKey }).exec();
+  let categoryIds = [];
+  if (categoryKey) {
+    const category = await ProductCategory.findOne({ key: categoryKey }).exec();
+    if (!category) {
+      return [];
+    }
+    console.log("---- category", category);
 
-  if (!category) {
-    return [];
+    const childrenCategories = await fetchAllCategoryChildren(category);
+    categoryIds = [category._id, ...childrenCategories.map((c) => c._id)];
+    console.log("categoryIds", categoryIds);
+  } else {
+    const categories = await ProductCategory.find({}).exec();
+    categoryIds = categories.map((c) => c._id);
   }
 
   const attributesIds = await Product.aggregate([
+    { $unwind: "$categories" },
     {
-      $match: { categories: { $in: [category._id] } },
+      $match: {
+        categories: {
+          $in: categoryIds,
+        },
+      },
     },
     {
       $project: {
