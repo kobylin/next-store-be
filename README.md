@@ -1,7 +1,15 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Product store backend
 
-## Getting Started
+Technologies: Node.js, GraphQL, MongoDB
 
+## Migrations
+
+Database migrations are placed in this folder
+```
+src/db/migrations
+```
+
+## How to run
 Install pm2
 
 ```bash
