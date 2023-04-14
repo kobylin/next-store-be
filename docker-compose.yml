@@ -15,10 +15,14 @@ services:
       context: ../fe
       dockerfile: ./Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=http://localhost:8000
+        - NEXT_PUBLIC_API_URL=http://localhost:4000
+        - NEXT_PUBLIC_INTERNAL_API_URL=http://be:4000
+        - INTERNAL_API_URL=http://be:4000
     container_name: next-shop-fe
     ports:
       - "3000:3000"
+    networks:
+      - next
   mongo:
     image: mongo:6.0.4
     container_name: next-shop-db

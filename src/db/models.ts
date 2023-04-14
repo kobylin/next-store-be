@@ -1,6 +1,5 @@
 import * as mongoose from "mongoose";
 import { Model, model, Schema } from "mongoose";
-import type { HydratedDocument } from "mongoose";
 import {
   fetchAllCategoryChildren,
   fetchAllCategoryParents,
