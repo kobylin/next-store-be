@@ -29,3 +29,7 @@ To run all services locally run
 ```
 docker-compose up
 ```
+
+## Frontend
+
+Backend repository https://github.com/kobylin/next-store-fe
